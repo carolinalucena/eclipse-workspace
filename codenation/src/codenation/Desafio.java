@@ -1,16 +1,22 @@
 package codenation;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 
 public class Desafio {
@@ -97,9 +103,34 @@ public class Desafio {
 		
 	    arq1.close();
 	    
-	    String urlPost = "https://api.codenation.dev/v1/challenge/dev-ps/submit-solution?token=da44dd95f36dd641abdf3a677fc68c705c57dfca";
+	    URL urlPost = new URL("https://api.codenation.dev/v1/challenge/dev-ps/submit-solution?token=da44dd95f36dd641abdf3a677fc68c705c57dfca");
+	    HttpURLConnection connection = (HttpURLConnection) urlPost.openConnection();
+
+	    //String auth = "Bearer " + oauthToken;
+	    //connection.setRequestProperty("Authorization", basicAuth);
 	    
-	    		
+	    File file = new File("answer.json");
 	    
+	    String boundary = UUID.randomUUID().toString();
+	    connection.setRequestMethod("POST");
+	    connection.setDoOutput(true);
+	    connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+
+	    DataOutputStream request = new DataOutputStream(connection.getOutputStream());
+
+	    request.writeBytes("--" + boundary + "\r\n");
+	    request.writeBytes("Content-Disposition: form-data; name=\"description\"\r\n\r\n");
+	    request.writeBytes("Criptografia de Julio Cesar" + "\r\n");
+
+	    request.writeBytes("--" + boundary + "\r\n");
+	    request.writeBytes("Content-Disposition: form-data; name=\"answer\"; filename=\"" + "answer.json" + "\"\r\n\r\n");
+	    request.writeBytes(jsonTexto.toString() + "\n");
+	    request.writeBytes("\r\n");
+
+	    request.writeBytes("--" + boundary + "--\r\n");
+	    request.flush();
+	    int respCode = connection.getResponseCode();
+
+	    System.out.println(respCode);
 	}
 }
